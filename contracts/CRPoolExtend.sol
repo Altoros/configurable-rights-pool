@@ -5,61 +5,63 @@ import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 
-interface IBPool {
+interface IBPools {
     function createPool(
-        uint initialSupply,
-        uint minimumWeightChangeBlockPeriodParam,
-        uint addTokenTimeLockInBlocksParam
+        uint256 initialSupply,
+        uint256 minimumWeightChangeBlockPeriodParam,
+        uint256 addTokenTimeLockInBlocksParam
     ) external;
 
-    function createPool(uint initialSupply) external;
+    function createPool(uint256 initialSupply) external;
 
-    function updateWeight(address token, uint newWeight) external;
+    function updateWeight(address token, uint256 newWeight) external;
 
     function updateWeightsGradually(
-        uint[] calldata newWeights,
-        uint startBlock,
-        uint endBlock
+        uint256[] calldata newWeights,
+        uint256 startBlock,
+        uint256 endBlock
     ) external;
 
     function pokeWeights() external;
 
     function commitAddToken(
         address token,
-        uint balance,
-        uint denormalizedWeight
+        uint256 balance,
+        uint256 denormalizedWeight
     ) external;
 
     function applyAddToken() external;
 
     function removeToken(address token) external;
 
-    function joinPool(uint poolAmountOut, uint[] calldata maxAmountsIn) external;
+    function joinPool(uint256 poolAmountOut, uint256[] calldata maxAmountsIn)
+        external;
 
-    function exitPool(uint poolAmountIn, uint[] calldata minAmountsOut) external;
+    function exitPool(uint256 poolAmountIn, uint256[] calldata minAmountsOut)
+        external;
 
     function joinswapExternAmountIn(
         address tokenIn,
-        uint tokenAmountIn,
-        uint minPoolAmountOut
+        uint256 tokenAmountIn,
+        uint256 minPoolAmountOut
     ) external;
 
     function joinswapPoolAmountOut(
         address tokenIn,
-        uint poolAmountOut,
-        uint maxAmountIn
+        uint256 poolAmountOut,
+        uint256 maxAmountIn
     ) external;
 
     function exitswapPoolAmountIn(
         address tokenOut,
-        uint poolAmountIn,
-        uint minAmountOut
+        uint256 poolAmountIn,
+        uint256 minAmountOut
     ) external;
 
     function exitswapExternAmountOut(
         address tokenOut,
-        uint tokenAmountOut,
-        uint maxPoolAmountIn
+        uint256 tokenAmountOut,
+        uint256 maxPoolAmountIn
     ) external;
 }
 
@@ -67,11 +69,15 @@ contract CRPoolExtend is Proxy, ERC1155Holder {
     address public immutable implementation;
     address public immutable exchangeProxy;
 
-    constructor(address _poolImpl, address _exchProxy, bytes memory _data) public {
+    constructor(
+        address _poolImpl,
+        address _exchProxy,
+        bytes memory _data
+    ) public {
         implementation = _poolImpl;
         exchangeProxy = _exchProxy;
 
-        if(_data.length > 0) {
+        if (_data.length > 0) {
             Address.functionDelegateCall(_poolImpl, _data);
         }
     }
@@ -81,27 +87,28 @@ contract CRPoolExtend is Proxy, ERC1155Holder {
     }
 
     function _beforeFallback() internal override {
-       _onlyExchangeProxy();
+        _onlyExchangeProxy();
     }
 
     function _onlyExchangeProxy() internal view {
         if (
-           msg.sig == bytes4(keccak256("createPool(uint256,uint256,uint256)")) ||
-           msg.sig == bytes4(keccak256("createPool(uint256)")) ||
-           msg.sig == IBPool.updateWeight.selector ||
-           msg.sig == IBPool.updateWeightsGradually.selector ||
-           msg.sig == IBPool.pokeWeights.selector ||
-           msg.sig == IBPool.commitAddToken.selector ||
-           msg.sig == IBPool.applyAddToken.selector ||
-           msg.sig == IBPool.removeToken.selector ||
-           msg.sig == IBPool.joinPool.selector ||
-           msg.sig == IBPool.exitPool.selector ||
-           msg.sig == IBPool.joinswapExternAmountIn.selector ||
-           msg.sig == IBPool.joinswapPoolAmountOut.selector ||
-           msg.sig == IBPool.exitswapPoolAmountIn.selector ||
-           msg.sig == IBPool.exitswapExternAmountOut.selector
+            msg.sig ==
+            bytes4(keccak256("createPool(uint256,uint256,uint256)")) ||
+            msg.sig == bytes4(keccak256("createPool(uint256)")) ||
+            msg.sig == IBPools.updateWeight.selector ||
+            msg.sig == IBPools.updateWeightsGradually.selector ||
+            msg.sig == IBPools.pokeWeights.selector ||
+            msg.sig == IBPools.commitAddToken.selector ||
+            msg.sig == IBPools.applyAddToken.selector ||
+            msg.sig == IBPools.removeToken.selector ||
+            msg.sig == IBPools.joinPool.selector ||
+            msg.sig == IBPools.exitPool.selector ||
+            msg.sig == IBPools.joinswapExternAmountIn.selector ||
+            msg.sig == IBPools.joinswapPoolAmountOut.selector ||
+            msg.sig == IBPools.exitswapPoolAmountIn.selector ||
+            msg.sig == IBPools.exitswapExternAmountOut.selector
         ) {
             require(msg.sender == exchangeProxy, "ERR_NOT_EXCHANGE_PROXY");
-       }
+        }
     }
 }

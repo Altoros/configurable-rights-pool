@@ -7,7 +7,7 @@ pragma experimental ABIEncoderV2;
 // Imports
 
 import "./CRPoolExtend.sol";
-import { RightsManager } from "../libraries/RightsManager.sol";
+import {RightsManager} from "../libraries/RightsManager.sol";
 import "../libraries/BalancerConstants.sol";
 import "./utils/Authorizable.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
@@ -37,9 +37,9 @@ contract CRPFactory is Authorizable {
         string poolTokenSymbol;
         string poolTokenName;
         address[] constituentTokens;
-        uint[] tokenBalances;
-        uint[] tokenWeights;
-        uint swapFee;
+        uint256[] tokenBalances;
+        uint256[] tokenWeights;
+        uint256 swapFee;
     }
 
     // State variables
@@ -49,30 +49,18 @@ contract CRPFactory is Authorizable {
     address public permissionManager;
 
     // Keep a list of all Configurable Rights Pools
-    mapping(address=>bool) private _isCrp;
+    mapping(address => bool) private _isCrp;
 
     // Event declarations
 
     // Log the address of each new smart pool, and its creator
-    event LogNewCrp(
-        address indexed caller,
-        address indexed pool
-    );
+    event LogNewCrp(address indexed caller, address indexed pool);
 
-    event LogBlabs(
-        address indexed caller,
-        address indexed blabs
-    );
+    event LogBlabs(address indexed caller, address indexed blabs);
 
-    event LogCrpImpl(
-        address indexed caller,
-        address indexed crpImpl
-    );
+    event LogCrpImpl(address indexed caller, address indexed crpImpl);
 
-    event LogExchproxy(
-        address indexed caller,
-        address indexed exchangeProxy
-    );
+    event LogExchproxy(address indexed caller, address indexed exchangeProxy);
 
     event LogPermissionmanager(
         address indexed caller,
@@ -97,19 +85,29 @@ contract CRPFactory is Authorizable {
         address factoryAddress,
         PoolParams calldata poolParams,
         RightsManager.Rights calldata rights
-    )
-        external
-        onlyAuthorized
-        returns (CRPoolExtend)
-    {
-        require(poolParams.constituentTokens.length >= BalancerConstants.MIN_ASSET_LIMIT, "ERR_TOO_FEW_TOKENS");
+    ) external onlyAuthorized returns (CRPoolExtend) {
+        require(
+            poolParams.constituentTokens.length >=
+                BalancerConstants.MIN_ASSET_LIMIT,
+            "ERR_TOO_FEW_TOKENS"
+        );
         require(exchangeProxy != address(0), "ERR_EXCH_PROXY_NOT_INITIALIZED");
-        require(permissionManager != address(0), "ERR_PERM_MAN_NOT_INITIALIZED");
-
+        require(
+            permissionManager != address(0),
+            "ERR_PERM_MAN_NOT_INITIALIZED"
+        );
 
         // Arrays must be parallel
-        require(poolParams.tokenBalances.length == poolParams.constituentTokens.length, "ERR_START_BALANCES_MISMATCH");
-        require(poolParams.tokenWeights.length == poolParams.constituentTokens.length, "ERR_START_WEIGHTS_MISMATCH");
+        require(
+            poolParams.tokenBalances.length ==
+                poolParams.constituentTokens.length,
+            "ERR_START_BALANCES_MISMATCH"
+        );
+        require(
+            poolParams.tokenWeights.length ==
+                poolParams.constituentTokens.length,
+            "ERR_START_WEIGHTS_MISMATCH"
+        );
 
         CRPoolExtend crp = new CRPoolExtend(
             crpImpl,
@@ -128,7 +126,10 @@ contract CRPFactory is Authorizable {
         // The caller is the controller of the CRP
         // The CRP will be the controller of the underlying Core BPool
         //crp.setController(msg.sender);
-        Address.functionDelegateCall(address(crp), abi.encodeWithSignature("setController(address)", msg.sender));
+        Address.functionDelegateCall(
+            address(crp),
+            abi.encodeWithSignature("setController(address)", msg.sender)
+        );
 
         address[] memory accounts = new address[](1);
         accounts[0] = address(crp);
@@ -139,41 +140,31 @@ contract CRPFactory is Authorizable {
         return crp;
     }
 
-    function setBLabs(address b)
-        external
-    {
+    function setBLabs(address b) external {
         require(msg.sender == blabs, "ERR_NOTBLABS");
         emit LogBlabs(msg.sender, b);
         blabs = b;
     }
 
-    function setCrpImpl(address _crpImpl)
-        external
-    {
+    function setCrpImpl(address _crpImpl) external {
         require(msg.sender == blabs, "ERR_NOT_BLABS");
         emit LogCrpImpl(msg.sender, _crpImpl);
         crpImpl = _crpImpl;
     }
 
-    function setExchProxy(address _exchProxy)
-        external
-    {
+    function setExchProxy(address _exchProxy) external {
         require(msg.sender == blabs, "ERR_NOTBLABS");
         emit LogExchproxy(msg.sender, _exchProxy);
         exchangeProxy = _exchProxy;
     }
 
-    function setPermissionManager(address _permissionManager)
-        external
-    {
+    function setPermissionManager(address _permissionManager) external {
         require(msg.sender == blabs, "ERR_NOTBLABS");
         emit LogPermissionmanager(msg.sender, _permissionManager);
         permissionManager = _permissionManager;
     }
 
-    function setAuthorization(address _authorization)
-        external
-    {
+    function setAuthorization(address _authorization) external {
         require(msg.sender == blabs, "ERR_NOTBLABS");
         _setAuthorization(_authorization);
     }
