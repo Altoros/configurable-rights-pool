@@ -3,9 +3,8 @@ pragma solidity 0.6.12;
 
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
-import "@openzeppelin/contracts/utils/StorageSlot.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
-
+import "./utils/StorageSlot.sol";
 interface IBPools {
     function createPool(
         uint256 initialSupply,
@@ -104,7 +103,7 @@ contract CRPoolExtend is Proxy, ERC1155Holder  {
         // emit Upgraded(newImplementation);
         implementation = newImplementation;
     }
-    
+
     function _setImplementation(address newImplementation) private {
         require(Address.isContract(newImplementation), "ERC1967: new implementation is not a contract");
         StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;
