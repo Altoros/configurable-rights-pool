@@ -4,7 +4,6 @@ pragma solidity 0.6.12;
 import "@openzeppelin/contracts/proxy/Proxy.sol";
 import "@openzeppelin/contracts/utils/Address.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
-import "./utils/StorageSlot.sol";
 interface IBPools {
     function createPool(
         uint256 initialSupply,
@@ -69,12 +68,12 @@ contract CRPoolExtend is Proxy, ERC1155Holder  {
     address public implementation;
     address public immutable exchangeProxy;
 
-    /**
+     /**
      * @dev Storage slot with the address of the current implementation.
      * This is the keccak-256 hash of "eip1967.proxy.implementation" subtracted by 1, and is
      * validated in the constructor.
      */
-    bytes32 internal constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
+    bytes32 private constant _IMPLEMENTATION_SLOT = 0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc;
 
     /**
      * @dev Emitted when the implementation is upgraded.
@@ -87,30 +86,43 @@ contract CRPoolExtend is Proxy, ERC1155Holder  {
     ) public {
         implementation = _poolImpl;
         exchangeProxy = _exchProxy;
-
+        assert(_IMPLEMENTATION_SLOT == bytes32(uint256(keccak256("eip1967.proxy.implementation")) - 1));
+        _setImplementation(_poolImpl);
         if (_data.length > 0) {
             Address.functionDelegateCall(_poolImpl, _data);
         }
     }
 
     /**
-     * @dev Perform implementation upgrade
+     * @dev Returns the current implementation address.
+     */
+    function _implementation() internal view override returns (address) {
+        return implementation;
+    }
+
+    /**
+     * @dev Upgrades the proxy to a new implementation.
      *
      * Emits an {Upgraded} event.
      */
     function upgradeTo(address newImplementation) public {
-        // _setImplementation(newImplementation);
-        // emit Upgraded(newImplementation);
+        _setImplementation(newImplementation);
         implementation = newImplementation;
+        emit Upgraded(newImplementation);
     }
 
+    /**
+     * @dev Stores a new address in the EIP1967 implementation slot.
+     */
     function _setImplementation(address newImplementation) private {
-        require(Address.isContract(newImplementation), "ERC1967: new implementation is not a contract");
-        StorageSlot.getAddressSlot(_IMPLEMENTATION_SLOT).value = newImplementation;
-    }
+        require(Address.isContract(newImplementation), "UpgradeableProxy: new implementation is not a contract");
 
-    function _implementation() internal view override returns (address) {
-        return implementation;
+        bytes32 slot = _IMPLEMENTATION_SLOT;
+
+        // solhint-disable-next-line no-inline-assembly
+        assembly {
+            sstore(slot, newImplementation)
+        }
     }
 
     function _beforeFallback() internal override {

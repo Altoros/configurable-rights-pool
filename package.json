@@ -26,8 +26,11 @@
     "devDependencies": {
         "@openzeppelin/contracts": "3.4.1",
         "@openzeppelin/test-helpers": "^0.5.5",
+        "@truffle/hdwallet-provider": "^1.2.0",
         "chai": "^4.2.0",
+        "cpr": "^3.0.1",
         "coveralls": "^3.0.8",
+        "dotenv": "^8.2.0",
         "eslint": "^6.7.1",
         "eslint-config-airbnb": "^18.0.1",
         "eslint-plugin-import": "^2.18.2",
@@ -40,10 +43,12 @@
         "solhint": "^3.2.0",
         "solidity-coverage": "^0.6.7",
         "standard": "^14.0.2",
+        "rimraf": "^3.0.2",
         "truffle": "^5.0.41",
         "truffle-assertions": "^0.9.1",
         "truffle-contract-size": "^2.0.1",
         "truffle-hdwallet-provider": "^1.0.17",
+        "truffle-plugin-verify": "^0.5.2",
         "web3": "^1.2.0"
     },
     "dependencies": {
