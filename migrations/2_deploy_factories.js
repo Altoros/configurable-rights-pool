@@ -51,7 +51,7 @@ module.exports = async function (deployer, network, accounts) {
     console.log('ConfigRightPool: ', crpIml.address);
     const crPoolExtend = await deployer.deploy(CRPoolExtend, crpIml.address, accounts[0], []);
     console.log('CRPoolExtend: ', crPoolExtend.address);
-    var crpFactory = await deployer.deploy(CRPFactory, crPoolExtend.address);
+    var crpFactory = await deployer.deploy(CRPFactory, crpIml.address);
     console.log('CRPFactory: ', crpFactory.address);
     // }
 };

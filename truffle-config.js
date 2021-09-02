@@ -42,8 +42,8 @@ module.exports = {
             host: 'localhost',
             network_id: '*',
             port: 8555,
-            gas: 0xfffffffffff,
-            gasPrice: 0x01,
+            // gas: 0xfffffffffff,
+            // gasPrice: 0x01,
         },
         // Useful for deploying to a public network.
         ropsten: {
